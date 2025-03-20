@@ -19,15 +19,16 @@ public class GrpcServerService extends ReactorSimpleGrpc.SimpleImplBase {
 
 	@Override
 	public Mono<HelloReply> sayHello(Mono<HelloRequest> request) {
-		return request.map(req -> {
+		return request.flatMap(req -> {
 			log.info("Hello " + req.getName());
 			if (req.getName().startsWith("error")) {
+				//return Mono.error(new IllegalArgumentException("Bad name: " + req.getName()));
 				throw new IllegalArgumentException("Bad name: " + req.getName());
 			}
 			if (req.getName().startsWith("internal")) {
-				throw new RuntimeException();
+				return Mono.error(new RuntimeException());
 			}
-			return HelloReply.newBuilder().setMessage("Hello ==> " + req.getName()).build();
+			return Mono.just(HelloReply.newBuilder().setMessage("Hello ==> " + req.getName()).build());
 		});
 	}
 
